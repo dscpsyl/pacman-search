@@ -157,7 +157,89 @@ def iterativeDeepeningSearch(problem):
 
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    # Start at depth 1 and increment from there
+    _DEPTH = 1
+    
+    stack = util.Stack()
+    visited = set()
+    
+    start = Node(problem.getStartState(), None, None, 0)
+    
+    # Keep incrementing the depth until a solution is found
+    while True:
+        # print("root::Testing depth: ", _DEPTH)
+        for action in problem.getActions(problem.getStartState()):
+            node = Node(problem.getResult(problem.getStartState(), action), start, action, problem.getCost(problem.getStartState(), action))
+            stack.push(node)
+            visited.add(node.state)
+        
+        while not stack.isEmpty():
+            node = stack.pop()
+            # print("root::Testing action: ", node.action)
+            result = depthLimitedSearch([node], problem, _DEPTH - 1, visited)
+            if result is None:
+                continue
+            else:
+                solution = []
+                for node in result:
+                    solution.append(node.action)
+                return solution
+        visited.clear()
+        _DEPTH += 1 
+    
+def depthLimitedSearch(nodePath, problem, limit, visited):
+    """Helper function for IDS to perform DFS with a depth limit.
+    Will return the solution path if one is found within the depth limit.
+
+    Args:
+        path (list): The current path of actions to the current state
+        problem (_type_): The overarching graph and search problem/functions
+        limit (_type_): The depth limit for the search
+    Returns:
+        list: The solution path to the goal state, None if no solution is found
+    """
+    # Get the current action from the path
+    currentNode = nodePath[-1]
+
+    
+    # Check if the current state is the goal state
+    if problem.goalTest(currentNode.state):
+        return nodePath
+    
+    # Check if the depth limit has been reached
+    if limit == 0:
+        return None
+    
+    # Try the actions from the current state
+    stack = util.Stack()
+    for action in problem.getActions(currentNode.state):
+        # print("dfs::Adding action: ", action)
+        node = Node(problem.getResult(currentNode.state, action), currentNode, action, problem.getCost(currentNode.state, action))
+        if node.state in visited:
+            continue
+        stack.push(node)
+        visited.add(node.state)
+    
+    # print("dfs::Visited Nodes: ", visited)
+    while not stack.isEmpty():
+        node = stack.pop()
+        # print("dfs::Testing action: ", node.action)
+        # Create a new path possibility
+        newNodePath = list(nodePath)
+        newNodePath.append(node)
+        result = depthLimitedSearch(newNodePath, problem, limit - 1, visited)
+        if result is None:
+            continue
+        else:
+            return result
+    
+    return None
+        
+    
+    
+    
+        
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
