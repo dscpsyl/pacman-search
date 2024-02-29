@@ -136,7 +136,7 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
-def iterativeDeepeningSearch(problem):
+def iterativeDeepeningSearch(problem) -> list:
     """
     Perform DFS with increasingly larger depth. Begin with a depth of 1 and increment depth by 1 at every step.
 
@@ -159,12 +159,12 @@ def iterativeDeepeningSearch(problem):
     "*** YOUR CODE HERE ***"
     
     # Start at depth 1 and increment from there
-    _DEPTH = 1
+    _DEPTH: int = 1
     
-    stack = util.Stack()
-    visited = set()
+    stack: util.Stack = util.Stack()
+    visited:set = set()
     
-    start = Node(problem.getStartState(), None, None, 0)
+    start: Node = Node(problem.getStartState(), None, None, 0)
     
     # Keep incrementing the depth until a solution is found
     while True:
@@ -188,7 +188,7 @@ def iterativeDeepeningSearch(problem):
         visited.clear()
         _DEPTH += 1 
     
-def depthLimitedSearch(nodePath, problem, limit, visited):
+def depthLimitedSearch(nodePath, problem, limit, visited) -> list | None:
     """Helper function for IDS to perform DFS with a depth limit.
     Will return the solution path if one is found within the depth limit.
 
@@ -234,17 +234,74 @@ def depthLimitedSearch(nodePath, problem, limit, visited):
         else:
             return result
     
-    return None
-        
-    
-    
-    
-        
+    return None  
 
-def aStarSearch(problem, heuristic=nullHeuristic):
+def aStarSearch(problem, heuristic=nullHeuristic) -> list:
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    # Create the explore priority queue and visited set
+    nextsearch = util.PriorityQueue()
+    visited = set()
+    
+    
+    # Create the start node and add it to the queue
+    start = Node(problem.getStartState(), None, None, float(0))
+    nextsearch.push(start, 0)
+    
+    while not nextsearch.isEmpty():
+        # Get the next node to explore
+        node = nextsearch.pop()
+        
+        print("astar::Searching: ", node.state)
+        
+        # Add it to the explored set if not already
+        if node.state in visited:
+            print("astar::Already visited: ", node.state)
+            continue
+        else:
+            visited.add(node.state)
+        
+        # Check if the node is the goal state
+        if problem.goalTest(node.state):
+            solution = []
+            while node.parent is not None:
+                solution.append(node.action)
+                node = node.parent
+            
+            return solution[::-1]
+        
+        print("astar::Expanding: ", node.state)
+        # Add the next nodes to the queue
+        for action in problem.getActions(node.state):
+            child = Node(problem.getResult(node.state, action), node, action, problem.getCost(node.state, action) + node.path_cost)
+            nextsearch.push(child, aStarHeuristicCalculation(child, problem, heuristic))
+    
+    else:
+        raise Exception("astar::No solution found")
+    
+    
+    
+
+        
+        
+
+def aStarHeuristicCalculation(node, problem, heuristic=nullHeuristic) -> float:
+    """Calculate the heuristic value for a node in the A* search algorithm.
+
+    Args:
+        node (Node): The current node to calculate the heuristic for
+        problem (SearchProblem): The overarching search problem
+        heuristic (function): The heuristic function to use for the calculation
+                                This function should take in the current state and the problem
+    Returns:
+        int: The heuristic value for the current node
+    """
+    
+    h: float = heuristic(node.state, problem)
+    c: float = node.path_cost
+
+    return float(h + c)
 
 # Abbreviations
 bfs = breadthFirstSearch
