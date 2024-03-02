@@ -158,3 +158,68 @@ def betterEvaluationFunction(currentGameState):
 # Abbreviation
 better = betterEvaluationFunction
 
+
+########################
+#    Helper Classes    #
+########################
+class TreeNode:
+    
+    def __init__(self, data, action, depth, agent):
+        self.data = data
+        self.action = action
+        self.children = []
+        self.score = None
+        self.parent = None
+        self.depth = depth
+        self.agent = agent
+    
+    def _noscore(self) -> bool:
+        return self.score == None
+    
+    def __eq__(self, value) -> bool:
+        if self._noscore() or value._noscore():
+            raise Exception("MinimaxAgent.treeNode::__eq__ - One of the nodes has no score")
+        return self.score == value.score
+    
+    def __lt__(self, value) -> bool:
+        if self._noscore() or value._noscore():
+            raise Exception("MinimaxAgent.treeNode::__lt__ - One of the nodes has no score")
+        return self.score < value.score
+
+    def __gt__(self, value) -> bool:
+        if self._noscore() or value._noscore():
+            raise Exception("MinimaxAgent.treeNode::__gt__ - One of the nodes has no score")
+        return self.score > value.score
+    
+    def __le__(self, value) -> bool:
+        if self._noscore() or value._noscore():
+            raise Exception("MinimaxAgent.treeNode::__le__ - One of the nodes has no score")
+        return self.score <= value.score
+    
+    def __ge__(self, value) -> bool:
+        if self._noscore() or value._noscore():
+            raise Exception("MinimaxAgent.treeNode::__ge__ - One of the nodes has no score")
+        return self.score >= value.score
+
+class Tree:
+    
+    def __init__(self, root):
+        self.root = root
+        self.tree = []
+        self.tree.append(root)
+    
+    def insert(self, parent, child):
+        parent.children.append(child)
+        child.parent = parent
+        self.tree.append(child)
+    
+    def leafs(self):
+        return [node for node in self.tree if node.children == []]
+
+    def isRoot(self, node):
+        return node is self.root
+    
+    def __repr__(self) -> str:
+        return str(self.tree)
+            
+    
