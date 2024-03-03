@@ -226,7 +226,61 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        
+        tree = self._populateTree(gameState) 
+        
+        # Get the leaves of the tree
+        leafs = tree.leafs()
+        
+        # Score the leaves
+        toBeCalculated = util.PriorityQueue()
+        for leaf in leafs:
+            leaf.score = self.evaluationFunction(leaf.data)
+            toBeCalculated.push(leaf, self.depth - leaf.depth)
+            
+        # Calculate the parents of the calculated children one depth at a time using the queue
+        while not toBeCalculated.isEmpty():
+            
+            # Get a node that is already calculated from the front of the queue
+            node = toBeCalculated.pop()
+            
+            # Find its parent
+            parent = node.parent
+            
+            # Check if the parent is the root
+            if tree.isRoot(parent):
+                continue # do be delt with seperately  
+        
+            # check if there is a parent
+            if parent.parent is None:
+                raise Exception("The parent of the current node is none even though this should not happen. The root of the tree is:", tree.root, "and the current node is", parent)
+            
+            # Double check that all the children of the parent have been calculated
+            if not all([child.score != None for child in parent.children]):
+                raise Exception("MinimaxAgent::getAction - Not all children of the parent have been calculated:", parent.children)
+            
+            # Calculate the score of the parent
+            if parent.agent == 0: # Max
+                parent.score = max(parent.children, key=lambda node: node.score).score
+            else: # Min
+                parent.score = self._expected(parent.children, key=lambda node: node.score)
+            
+            # Add the parent to the queue
+            toBeCalculated.push(parent, self.depth - parent.depth)
+        
+        # Double check that all root children have been calculated
+        if not all([child.score != None for child in tree.root.children]):
+            raise Exception("MinimaxAgent::getAction - Not all children of the root have been calculated", [child.score for child in tree.root.children])
+        
+        # Return the action that has the highest score
+        bestChild = max(tree.root.children, key=lambda node: node.score)
+        return bestChild.action
+    
+    def _expected(self, iterable, key=None) -> float:
+        if key is None:
+            key = lambda x: x
+        
+        return float(sum(key(x) for x in iterable)) / float(len(iterable))
 
 def betterEvaluationFunction(currentGameState):
     """
