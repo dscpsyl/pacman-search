@@ -287,10 +287,65 @@ def betterEvaluationFunction(currentGameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 9).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION: This is a linear combination of four game data weighted to
+    determine the score of a given game state. Starting from the most weighted
+    to least:
+    
+    Game Score - the game score of a given state should be at least one of the more
+    important ones. We are trying to maxamize this parameter afterall.
+    
+    Ghost Distance - to survive the longest, we want to keep away from the ghosts as
+    much as possible
+    
+    Food Amount - the less food there is on the board, the closer we are to winning
+    
+    Capsule Amount - the less capsules we have the closer we are to completing the board
+    
+    Valid Moves - in case of two boards that have close to equal score, the state in which
+    PacMan has more possibilities is the better option
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    numOfFood = currentGameState.getNumFood()
+    
+    remainingCapsules = currentGameState.getCapsules()
+    numberOfCapsules = len(remainingCapsules)
+    
+    currentGameStateScore = currentGameState.getScore()
+    
+    pacManPos = currentGameState.getPacmanPosition()
+    ghostsPos = currentGameState.getGhostPositions()
+    
+    pacManActions = currentGameState.getLegalActions(0)
+    numOfPacManActions = len(pacManActions)
+    
+    
+    score = 0.00
+    weights = [1.75, 0.75, 2.75, 2.25, 0.1]
+    
+    # Having less food is better (that means we've eaten more)
+    score += weights[0] * float(1.0 / float(numOfFood + 1))
+    
+    # Having less capsules is also better (that means we've completed more of the board)
+    score += weights[1] * float(1.0 / float(numberOfCapsules + 1))
+    
+    # The current score is also important
+    if currentGameStateScore != 0:
+        score += weights[2] * float( 1.0 / float(currentGameStateScore))
+    
+    # Keep away from the ghosts
+    for ghost in ghostsPos:
+        distanceBetweenPacManAndGhost = util.manhattanDistance(pacManPos, ghost)
+        if distanceBetweenPacManAndGhost != 0:
+            score += weights[3] * float(1.0 / float(distanceBetweenPacManAndGhost))
+        else:
+            score -= weights[3]
+    
+    # In close calls, the move with more moves is better
+    score += weights[4] * float( 1.0 / float(numOfPacManActions + 1))
+    
+    
+    return score
 
 # Abbreviation
 better = betterEvaluationFunction
